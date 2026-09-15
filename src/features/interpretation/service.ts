@@ -151,13 +151,11 @@ export async function interpretDivination(options: {
     });
 
     try {
+        // 统一走 requestCustomProvider（node:https）：Vercel 上全局 fetch 出站会导致函数被平台层重置。
         const aiResult = await requestAiInterpretation({
             systemPrompt,
             userPrompt,
-            config:
-                customAiConfig || resolvedAi?.source === "database"
-                    ? aiConfig
-                    : undefined,
+            config: aiConfig,
             maxTokens: getInterpretationMaxTokens(
                 settings.interpretation.detailLevel
             ),

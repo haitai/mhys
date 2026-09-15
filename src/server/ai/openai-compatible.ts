@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { request as httpsRequest } from "node:https";
-import { getAiConfig, type AiConfig } from "@/server/config/env";
+import { type AiConfig } from "@/server/config/env";
 import { ApiError } from "@/server/http/api-error";
 import { resolveSafeOutboundBaseUrl } from "@/server/security/outbound-url";
 
@@ -123,63 +123,25 @@ async function requestCustomProvider(options: {
 export async function requestAiInterpretation(options: {
     systemPrompt: string;
     userPrompt: string;
-    config?: AiConfig;
+    config: AiConfig;
     temperature?: number;
     maxTokens?: number;
     timeoutMs?: number;
 }): Promise<AiInterpretationResult> {
-    const config = options.config || getAiConfig();
+    const config = options.config;
     const temperature = options.temperature ?? 0.7;
     const maxTokens = options.maxTokens ?? 1800;
     const timeoutMs = options.timeoutMs ?? AI_TIMEOUT_MS;
     const startedAt = Date.now();
 
-    let responseStatus: number;
-    let payload: unknown;
-    try {
-        if (options.config) {
-            const customResponse = await requestCustomProvider({
-                config,
-                systemPrompt: options.systemPrompt,
-                userPrompt: options.userPrompt,
-                temperature,
-                maxTokens,
-                timeoutMs,
-            });
-            responseStatus = customResponse.status;
-            payload = customResponse.payload;
-        } else {
-            const response = await fetch(`${config.baseUrl}/chat/completions`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${config.apiKey}`,
-                },
-                body: JSON.stringify({
-                    model: config.model,
-                    messages: [
-                        { role: "system", content: options.systemPrompt },
-                        { role: "user", content: options.userPrompt },
-                    ],
-                    temperature,
-                    max_tokens: maxTokens,
-                    stream: false,
-                }),
-                signal: AbortSignal.timeout(timeoutMs),
-            });
-            responseStatus = response.status;
-            payload = await response.json();
-        }
-    } catch (error) {
-        if (error instanceof ApiError) throw error;
-        if (
-            error instanceof Error &&
-            (error.name === "TimeoutError" || error.name === "AbortError")
-        ) {
-            throw new ApiError(504, "AI_TIMEOUT", "AI 解读超时，请稍后重试");
-        }
-        throw new ApiError(502, "AI_NETWORK_ERROR", "无法连接 AI 服务");
-    }
+    const { status: responseStatus, payload } = await requestCustomProvider({
+        config,
+        systemPrompt: options.systemPrompt,
+        userPrompt: options.userPrompt,
+        temperature,
+        maxTokens,
+        timeoutMs,
+    });
 
     if (responseStatus < 200 || responseStatus >= 300) {
         throw new ApiError(
