@@ -5,6 +5,6 @@
   "installCommand": "npm ci",
   "framework": "nextjs",
   "regions": [
-    "hnd1"
+    "sin1"
   ]
 }
