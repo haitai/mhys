@@ -36,6 +36,15 @@ export interface AiInterpretationResult {
     latencyMs: number;
 }
 
+// 提取 OpenAI 兼容错误响应中的 message，便于定位服务商侧问题
+function extractProviderErrorMessage(payload: unknown): string | null {
+    if (!payload || typeof payload !== "object") return null;
+    const message = (payload as { error?: { message?: unknown } }).error
+        ?.message;
+    if (typeof message !== "string" || !message.trim()) return null;
+    return message.trim().slice(0, 200);
+}
+
 async function requestCustomProvider(options: {
     config: AiConfig;
     systemPrompt: string;
@@ -144,10 +153,11 @@ export async function requestAiInterpretation(options: {
     });
 
     if (responseStatus < 200 || responseStatus >= 300) {
+        const detail = extractProviderErrorMessage(payload);
         throw new ApiError(
             502,
             "AI_PROVIDER_ERROR",
-            `AI 服务暂时不可用（状态码 ${responseStatus}）`
+            `AI 服务返回错误（状态码 ${responseStatus}）${detail ? `：${detail}` : ""}`
         );
     }
 

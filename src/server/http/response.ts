@@ -28,13 +28,17 @@ export function apiFailure(
             headers.set("Retry-After", String(error.retryAfterSeconds));
         }
 
+        // 前置 CDN 会拦截源站 5xx 并替换响应体，应用级错误统一返回 200，
+        // 错误语义由 envelope 的 ok/error 字段承载。
+        const status = error.status >= 500 ? 200 : error.status;
+
         return NextResponse.json(
             {
                 ok: false,
                 error: { code: error.code, message: error.message },
                 requestId,
             },
-            { status: error.status, headers }
+            { status, headers }
         );
     }
 
@@ -46,7 +50,7 @@ export function apiFailure(
             requestId,
         },
         {
-            status: 500,
+            status: 200,
             headers: { "x-request-id": requestId },
         }
     );
