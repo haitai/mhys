@@ -26,8 +26,9 @@ export async function POST(request: Request) {
             userPrompt: "只回复四个字：连接成功",
             config,
             temperature: 0,
-            maxTokens: 16,
-            timeoutMs: 20_000,
+            // 推理型模型会把部分 token 用于思考，16 容易导致正文为空
+            maxTokens: 512,
+            timeoutMs: 25_000,
         });
         logInfo("admin_ai_connection_tested", {
             requestId,

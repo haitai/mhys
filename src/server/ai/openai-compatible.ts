@@ -13,7 +13,8 @@ const providerResponseSchema = z.looseObject({
         .array(
             z.looseObject({
                 message: z.looseObject({
-                    content: z.string().min(1).max(50_000),
+                    // 推理型模型在 max_tokens 耗尽时 content 可能为 null
+                    content: z.string().max(50_000).nullable().optional(),
                 }),
             })
         )
@@ -166,8 +167,17 @@ export async function requestAiInterpretation(options: {
         throw new ApiError(502, "AI_INVALID_RESPONSE", "AI 服务返回内容无效");
     }
 
+    const interpretation = parsed.data.choices[0].message.content?.trim();
+    if (!interpretation) {
+        throw new ApiError(
+            502,
+            "AI_EMPTY_RESPONSE",
+            "AI 返回内容为空（推理型模型可能因生成长度不足，token 全部用于思考）"
+        );
+    }
+
     return {
-        interpretation: parsed.data.choices[0].message.content.trim(),
+        interpretation,
         provider: new URL(config.baseUrl).host,
         model: config.model,
         providerRequestId: parsed.data.id,
