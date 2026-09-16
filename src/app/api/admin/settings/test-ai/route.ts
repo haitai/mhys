@@ -26,8 +26,7 @@ export async function POST(request: Request) {
             userPrompt: "只回复四个字：连接成功",
             config,
             temperature: 0,
-            // 推理型模型会把部分 token 用于思考，16 容易导致正文为空
-            maxTokens: 512,
+            // 不传 maxTokens：推理型模型需要足够的思考空间
             timeoutMs: 25_000,
         });
         logInfo("admin_ai_connection_tested", {

@@ -51,7 +51,7 @@ async function requestCustomProvider(options: {
     systemPrompt: string;
     userPrompt: string;
     temperature: number;
-    maxTokens: number;
+    maxTokens?: number;
     timeoutMs: number;
 }): Promise<{ status: number; payload: unknown }> {
     const target = await resolveSafeOutboundBaseUrl(options.config.baseUrl);
@@ -63,7 +63,8 @@ async function requestCustomProvider(options: {
             { role: "user", content: options.userPrompt },
         ],
         temperature: options.temperature,
-        max_tokens: options.maxTokens,
+        // 不传 max_tokens，避免推理型模型的思考 token 被截断导致正文为空
+        ...(options.maxTokens ? { max_tokens: options.maxTokens } : {}),
         stream: false,
     });
 
@@ -140,7 +141,6 @@ export async function requestAiInterpretation(options: {
 }): Promise<AiInterpretationResult> {
     const config = options.config;
     const temperature = options.temperature ?? 0.7;
-    const maxTokens = options.maxTokens ?? 1800;
     const timeoutMs = options.timeoutMs ?? AI_TIMEOUT_MS;
     const startedAt = Date.now();
 
@@ -149,7 +149,7 @@ export async function requestAiInterpretation(options: {
         systemPrompt: options.systemPrompt,
         userPrompt: options.userPrompt,
         temperature,
-        maxTokens,
+        maxTokens: options.maxTokens,
         timeoutMs,
     });
 

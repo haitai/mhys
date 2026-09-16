@@ -4,7 +4,6 @@ import type { InterpretationRequest } from "@/features/interpretation/contracts"
 import {
     buildInterpretationSystemPrompt,
     buildInterpretationUserPrompt,
-    getInterpretationMaxTokens,
     INTERPRETATION_SYSTEM_PROMPT,
 } from "@/features/interpretation/prompt";
 
@@ -60,8 +59,5 @@ describe("解读提示词", () => {
         expect(concise).toContain("现代中文");
         expect(detailed).toContain("九百至一千三百字");
         expect(detailed).toContain("半文半白");
-        expect(getInterpretationMaxTokens("concise")).toBeLessThan(
-            getInterpretationMaxTokens("detailed")
-        );
     });
 });

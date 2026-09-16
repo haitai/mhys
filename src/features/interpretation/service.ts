@@ -6,7 +6,6 @@ import {
 import {
     buildInterpretationSystemPrompt,
     buildInterpretationUserPrompt,
-    getInterpretationMaxTokens,
     INTERPRETATION_PROMPT_VERSION,
 } from "@/features/interpretation/prompt";
 import { requestAiInterpretation } from "@/server/ai/openai-compatible";
@@ -156,9 +155,6 @@ export async function interpretDivination(options: {
             systemPrompt,
             userPrompt,
             config: aiConfig,
-            maxTokens: getInterpretationMaxTokens(
-                settings.interpretation.detailLevel
-            ),
         });
 
         const record = await completeInterpretationRecord({

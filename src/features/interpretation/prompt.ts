@@ -161,14 +161,6 @@ ${DETAIL_INSTRUCTIONS[preferences.detailLevel]}
 ${TONE_INSTRUCTIONS[preferences.tone]}`;
 }
 
-export function getInterpretationMaxTokens(
-    detailLevel: InterpretationPreferences["detailLevel"]
-): number {
-    if (detailLevel === "concise") return 1_000;
-    if (detailLevel === "standard") return 1_800;
-    return 2_600;
-}
-
 export function buildInterpretationUserPrompt(
     input: InterpretationRequest,
     result: DivinationResult
