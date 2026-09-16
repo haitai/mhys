@@ -28,6 +28,7 @@ export async function POST(request: Request) {
             temperature: 0,
             // 不传 maxTokens：推理型模型需要足够的思考空间
             timeoutMs: 25_000,
+            exposeProviderError: true,
         });
         logInfo("admin_ai_connection_tested", {
             requestId,

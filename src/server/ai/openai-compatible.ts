@@ -138,6 +138,8 @@ export async function requestAiInterpretation(options: {
     temperature?: number;
     maxTokens?: number;
     timeoutMs?: number;
+    // 仅在管理员连接检测时透出服务商错误详情，避免向访客泄露模型配置
+    exposeProviderError?: boolean;
 }): Promise<AiInterpretationResult> {
     const config = options.config;
     const temperature = options.temperature ?? 0.7;
@@ -154,7 +156,9 @@ export async function requestAiInterpretation(options: {
     });
 
     if (responseStatus < 200 || responseStatus >= 300) {
-        const detail = extractProviderErrorMessage(payload);
+        const detail = options.exposeProviderError
+            ? extractProviderErrorMessage(payload)
+            : null;
         throw new ApiError(
             502,
             "AI_PROVIDER_ERROR",

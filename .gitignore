@@ -53,6 +53,7 @@ CLAUDE.md
 # IDE
 .vscode/
 .idea/
+.workbuddy/
 *.swp
 *.swo
 *~
